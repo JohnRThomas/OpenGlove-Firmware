@@ -88,13 +88,12 @@ class SplayFinger : public Finger {
   void readInput() override {
     Finger::readInput();
     int new_splay_value = analogRead(splay_pin);
-    // Update the calibration
-    if (calibrate) {
-      splay_calibrator.update(new_splay_value);
-    }
+    
+    // map splay value to match max angle in driver
+    splay_value = map(new_splay_value, ANALOG_MID - DRIVER_MAX_ANGLE, ANALOG_MID + DRIVER_MAX_ANGLE, ANALOG_MID - POT_MAX_ANGLE, ANALOG_MID + POT_MAX_ANGLE);
 
-    // set the value to the calibrated value.
-    splay_value = splay_calibrator.calibrate(new_splay_value, 0, ANALOG_MAX);
+    // constrain splay value to 0 -> 4095 range.
+    splay_value = constrain(splay_value, 0, 4095);
   }
 
   inline int getEncodedSize() const override {

@@ -72,6 +72,12 @@
 #define FORCE_FEEDBACK_MAX   1000 // Value of 1000 means maximum limit.
 #define FORCE_FEEDBACK_RELEASE 50 // To prevent hardware damage, value passed the limit for when to release FFB. (Set to FORCE_FEEDBACK_MAX to disable)
 
+// Splay Scaling
+// Unit invariant as long as you use the same unit between the two variables
+#define POT_MAX_ANGLE    270
+#define DRIVER_MAX_ANGLE 40
+#define ANALOG_MID (ANALOG_MAX / 2) //expected resting splay value (can be chanched if your pots are not in the midle of their range when fingers are in resting position)
+
 // Counts of objects in the system used for looping
 // Inputs
 #define GESTURE_COUNT        (TRIGGER_GESTURE + GRAB_GESTURE + PINCH_GESTURE)
