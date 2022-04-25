@@ -90,7 +90,7 @@ class SplayFinger : public Finger {
     int new_splay_value = analogRead(splay_pin);
     
     // map splay value to match max angle in driver
-    splay_value = map(new_splay_value, ANALOG_MID - DRIVER_MAX_ANGLE, ANALOG_MID + DRIVER_MAX_ANGLE, ANALOG_MID - POT_MAX_ANGLE, ANALOG_MID + POT_MAX_ANGLE);
+    splay_value = map(new_splay_value, ANALOG_MID - DRIVER_MAX_SPLAY_ANGLE, ANALOG_MID + DRIVER_MAX_SPLAY_ANGLE, ANALOG_MID - POT_MAX_SPLAY_ANGLE, ANALOG_MID + POT_MAX_SPLAY_ANGLE);
 
     // constrain splay value to 0 -> 4095 range.
     splay_value = constrain(splay_value, 0, 4095);

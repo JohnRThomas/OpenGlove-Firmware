@@ -74,8 +74,8 @@
 
 // Splay Scaling
 // Unit invariant as long as you use the same unit between the two variables
-#define POT_MAX_ANGLE    270
-#define DRIVER_MAX_ANGLE 40
+#define POT_MAX_SPLAY_ANGLE    270
+#define DRIVER_MAX_SPLAY_ANGLE 40
 #define ANALOG_MID (ANALOG_MAX / 2) //expected resting splay value (can be chanched if your pots are not in the midle of their range when fingers are in resting position)
 
 // Counts of objects in the system used for looping
