@@ -1,7 +1,14 @@
 #pragma once
 #include "Config.h"
-
 #include "DriverProtocol.hpp"
+
+#if ENABLE_I2C_INTERFACE == true
+  #include "I2CSetup.hpp"
+#endif
+
+#if ENABLE_PCA9685_16CH_PWM_BOARD == true
+  #include "PCA9685.hpp"
+#endif
 
 #include "Button.hpp"
 #include "Finger.hpp"
@@ -91,14 +98,28 @@ HapticMotor* haptics[HAPTIC_COUNT] = {
 
 ForceFeedback* force_feedbacks[FORCE_FEEDBACK_COUNT] {
   #if ENABLE_FORCE_FEEDBACK
+
+  
     #if FORCE_FEEDBACK_STYLE == FORCE_FEEDBACK_STYLE_SERVO
-      #if ENABLE_THUMB
-        new ServoForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, PIN_THUMB_FFB, FORCE_FEEDBACK_INVERT),
+      #if USE_PCA9685_16CH_FOR_FFB  //For PCA9685
+        #if ENABLE_THUMB
+          new ServoForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, SERVO_CH_THUMB_FFB, FORCE_FEEDBACK_INVERT),
+        #endif
+        new ServoForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, SERVO_CH_INDEX_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, SERVO_CH_MIDDLE_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, SERVO_CH_RING_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, SERVO_CH_PINKY_FFB, FORCE_FEEDBACK_INVERT),
+      #else //For connected to microcontroller
+        #if ENABLE_THUMB
+          new ServoForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, PIN_THUMB_FFB, FORCE_FEEDBACK_INVERT),
+        #endif
+        new ServoForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, PIN_INDEX_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, PIN_MIDDLE_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, PIN_RING_FFB, FORCE_FEEDBACK_INVERT),
+        new ServoForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, PIN_PINKY_FFB, FORCE_FEEDBACK_INVERT),
       #endif
-      new ServoForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, PIN_INDEX_FFB, FORCE_FEEDBACK_INVERT),
-      new ServoForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, PIN_MIDDLE_FFB, FORCE_FEEDBACK_INVERT),
-      new ServoForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, PIN_RING_FFB, FORCE_FEEDBACK_INVERT),
-      new ServoForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, PIN_PINKY_FFB, FORCE_FEEDBACK_INVERT)
+
+      
     #elif FORCE_FEEDBACK_STYLE == FORCE_FEEDBACK_STYLE_CLAMP
       #if ENABLE_THUMB
         new DigitalClampForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, PIN_THUMB_FFB),
@@ -107,14 +128,26 @@ ForceFeedback* force_feedbacks[FORCE_FEEDBACK_COUNT] {
       new DigitalClampForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, PIN_MIDDLE_FFB),
       new DigitalClampForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, PIN_RING_FFB),
       new DigitalClampForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, PIN_PINKY_FFB)
+
+      
     #elif FORCE_FEEDBACK_STYLE == FORCE_FEEDBACK_STYLE_SERVO_CLAMP
-      #if ENABLE_THUMB
-        new ServoClampForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, PIN_THUMB_FFB),
+      #if USE_PCA9685_16CH_FOR_FFB  //For PCA9685
+        #if ENABLE_THUMB
+          new ServoClampForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, SERVO_CH_THUMB_FFB),
+        #endif
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, SERVO_CH_INDEX_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, SERVO_CH_MIDDLE_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, SERVO_CH_RING_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, SERVO_CH_PINKY_FFB),
+      #else //For connected to microcontroller
+        #if ENABLE_THUMB
+          new ServoClampForceFeedback(DecodedOuput::Type::FFB_THUMB, &finger_thumb, PIN_THUMB_FFB),
+        #endif
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, PIN_INDEX_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, PIN_MIDDLE_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, PIN_RING_FFB),
+        new ServoClampForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, PIN_PINKY_FFB),
       #endif
-      new ServoClampForceFeedback(DecodedOuput::Type::FFB_INDEX, &finger_index, PIN_INDEX_FFB),
-      new ServoClampForceFeedback(DecodedOuput::Type::FFB_MIDDLE, &finger_middle, PIN_MIDDLE_FFB),
-      new ServoClampForceFeedback(DecodedOuput::Type::FFB_RING, &finger_ring, PIN_RING_FFB),
-      new ServoClampForceFeedback(DecodedOuput::Type::FFB_PINKY, &finger_pinky, PIN_PINKY_FFB)
     #endif
   #endif
 };

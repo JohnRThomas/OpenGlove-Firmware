@@ -23,7 +23,7 @@ https://store.steampowered.com/app/1574050/OpenGloves/
 
 # Credits
 ### Upstream repository available on GitHub:
-https://github.com/LucidVR/opengloves-driver
+https://github.com/LucidVR/lucidgloves
 
 ### Special Thanks:
 * [LucasVRTech](https://github.com/lucas-vrtech) of the LucidGlove project
@@ -33,3 +33,4 @@ https://github.com/LucidVR/opengloves-driver
 * [Crylog](https://github.com/ciborg971) Multiplexer support + RGB LEDS support
 * [AikoKiss](https://github.com/AikoKiss) Beta testing
 * [MinyStreem](https://github.com/MinyStreem) Wifi Support
+* [Roastlawyer](https://github.com/Roastlawyer) I2C support + PCA9685 support

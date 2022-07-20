@@ -51,6 +51,19 @@ void setup() {
   register(force_feedbacks, outputs, FORCE_FEEDBACK_COUNT, output_count);
   register(haptics, outputs, HAPTIC_COUNT, output_count);
 
+  // Initialize I2C
+  #if ENABLE_I2C_INTERFACE == true
+    InitializeI2CInterface();
+  #endif
+
+  //Initialize PCA9685 Servo Board
+  #if ENABLE_PCA9685_16CH_PWM_BOARD == true
+    Initialize_PCA9685_Board();
+  #endif
+  Serial.print("Is glove using PCA9685 for haptic servos: ");
+  Serial.println(USE_PCA9685_16CH_FOR_FFB);
+      
+  
   // Figure out needed size for the output string.
   int string_size = 0;
   for(size_t i = 0; i < input_count; i++) {

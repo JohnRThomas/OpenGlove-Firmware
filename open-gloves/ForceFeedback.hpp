@@ -9,7 +9,11 @@
   #include <Servo.h>
 #endif
 
-#if FORCE_FEEDBACK_SMOOTH_STEPPING
+#if USE_PCA9685_16CH_FOR_FFB
+  #define SERVO_MIN !FORCE_FEEDBACK_INVERT ? PCA_9685_MIN_SERVOPULSE : PCA_9685_MAX_SERVOPULSE //The PCA_9685_ MIN & MAX values are set in the CONFIG.H File (total range should probably be 100ish-600ish) 
+  #define SERVO_MAX !FORCE_FEEDBACK_INVERT ? PCA_9685_MAX_SERVOPULSE : PCA_9685_MIN_SERVOPULSE
+  #define WRITE_FUNCTION(x, y, z) setPWM(x, y, z) //X is Servo_CH, Y is 0, Z is Width of the pulse (total range should probably be 100ish-600ish) 
+#elif FORCE_FEEDBACK_SMOOTH_STEPPING
   #define SERVO_MIN !FORCE_FEEDBACK_INVERT ? MIN_PULSE_WIDTH : MAX_PULSE_WIDTH
   #define SERVO_MAX !FORCE_FEEDBACK_INVERT ? MAX_PULSE_WIDTH : MIN_PULSE_WIDTH
   #define WRITE_FUNCTION(x) writeMicroseconds(x)
@@ -47,12 +51,28 @@ class ServoForceFeedback : public ForceFeedback {
 
   void setupOutput() override {
     // Initialize the servo and move it to the unrestricted base limit.
-    servo.attach(servo_pin);
-    servo.WRITE_FUNCTION(SERVO_MIN);
+    #if USE_PCA9685_16CH_FOR_FFB
+      pwm_board_0.WRITE_FUNCTION(servo_pin, 0, SERVO_MIN);
+      //Serial.print("DEBUG: SERVO_MIN ");
+      //Serial.println(SERVO_MIN);
+    #else
+      servo.attach(servo_pin);
+      servo.WRITE_FUNCTION(SERVO_MIN);
+      //Serial.print("DEBUG: SERVO_MIN ");
+      //Serial.println(SERVO_MIN);
+    #endif
   };
 
   void updateOutput() override {
-    servo.WRITE_FUNCTION(scale(limit));
+    #if USE_PCA9685_16CH_FOR_FFB
+      pwm_board_0.WRITE_FUNCTION(servo_pin, 0, scale(limit));
+      //Serial.print("DEBUG: (scale(limit)) ");
+      //Serial.println(scale(limit));
+    #else
+      servo.WRITE_FUNCTION(scale(limit));
+      //Serial.print("DEBUG: (scale(limit)) "); //Debug code to show what value is being sent to the servos
+      //Serial.println(scale(limit));
+    #endif
   }
 
  protected:
@@ -133,18 +153,30 @@ class ServoClampForceFeedback : public ClampForceFeedback {
 
   void setupOutput() {
     // Initialize the servo and move it to "Unlocked state".
-    servo.attach(servo_pin);
-    unlock();
+    #if USE_PCA9685_16CH_FOR_FFB
+      pwm_board_0.setPWM(servo_pin, 0, FORCE_FEEDBACK_CLAMP_UNLOCK);    //Completly untested, values may be way outside accaptable pulsewidth range
+    #else
+      servo.attach(servo_pin);
+      unlock();
+    #endif
   };
 
  protected:
   int servo_pin;
   Servo servo;
   void lock() override {
-    servo.write(FORCE_FEEDBACK_SERVO_CLAMP_LOCK);
+    #if USE_PCA9685_16CH_FOR_FFB
+      pwm_board_0.setPWM(servo_pin, 0, FORCE_FEEDBACK_SERVO_CLAMP_LOCK);    //Completly untested, values may be way outside accaptable pulsewidth range
+    #else
+      servo.write(FORCE_FEEDBACK_SERVO_CLAMP_LOCK);
+    #endif
   }
 
   void unlock() override {
-    servo.write(FORCE_FEEDBACK_SERVO_CLAMP_UNLOCK);
+    #if USE_PCA9685_16CH_FOR_FFB
+      pwm_board_0.setPWM(servo_pin, 0, FORCE_FEEDBACK_SERVO_CLAMP_UNLOCK);    //Completly untested, values may be way outside accaptable pulsewidth range
+    #else
+      servo.write(FORCE_FEEDBACK_SERVO_CLAMP_UNLOCK);
+    #endif
   }
 };

@@ -112,6 +112,27 @@
 #define MAX_CALIBRATED_COUNT FINGER_COUNT
 #define MAX_OUTPUT_COUNT     (HAPTIC_COUNT + FORCE_FEEDBACK_COUNT)
 
+//
+#define ENABLE_I2C_INTERFACE            false   // Remember to define the pins below
+
+#define ENABLE_PCA9685_16CH_PWM_BOARD   (false && ENABLE_I2C_INTERFACE)      // Requires ENABLE_I2C_INTERFACE to be true in order to work
+#define PWM_Board_0_I2C_ADDRESS         0x40    //The I2C address of the above PCA9685 Board, Default is 0x40
+#define PWM_Board_0_PWM_FREQUENCY       50      //set the PWM frequency the board uses, default is 50hz (20ms Cycles) which is what most analogue servos use
+#define USE_PCA9685_16CH_FOR_FFB        (false && ENABLE_PCA9685_16CH_PWM_BOARD)     // Requires ENABLE_PCA9685_16CH_PWM_BOARD to be true in order to work
+#define USE_PCA9685_16CH_FOR_HAPTICS    (false && ENABLE_PCA9685_16CH_PWM_BOARD)     // Requires ENABLE_PCA9685_16CH_PWM_BOARD to be true in order to work    (PLACEHOLDER Setting ATM)
+
+//If you have the servos connected directly to the microcontroller, configure using the PIN_*Finger*_FFB setting in the appropriate section for your microcontroller.
+#define SERVO_CH_PINKY_FFB   15  // Board CHs used for force feedback servos when connected through PCA9685 Servo Board
+#define SERVO_CH_RING_FFB    14 //^
+#define SERVO_CH_MIDDLE_FFB  13 //^
+#define SERVO_CH_INDEX_FFB   12 //^
+#define SERVO_CH_THUMB_FFB   11 //^
+
+#define PCA_9685_MIN_SERVOPULSE 100 //(total range should probably be 100ish-600ish)  start with values of 125 ish for Min and 500 for max, slowly decrease and increase them respectivly ↓
+#define PCA_9685_MAX_SERVOPULSE 525 //(total range should probably be 100ish-600ish)  until your servo horns move to the min and max positions with the opengloves test buttons ↓
+                                    //                                                (ie: you get expected range of motion from servos,) 
+
+
 //PINS CONFIGURATION
 #if defined(__AVR__)
   //(This configuration is for Arduino Nano so make sure to change if you're on another board)
@@ -131,6 +152,9 @@
   #define PIN_PNCH_BTN        12 //unused if gesture set
   #define PIN_CALIB           13 //button for recalibration
   #define PIN_LED             LED_BUILTIN
+    //If you have the servos connected directly to the microcontroller, set with the PIN_ config below.
+    //If you connected the FFB servos through the PCA9685 Servo driver board, leave the PIN_*Finger*_FFB
+    //at 1 and instead set the servo board CH in the the SERVO_CH_ config above instead
   #define PIN_PINKY_FFB       2 //used for force feedback
   #define PIN_RING_FFB        3 //^
   #define PIN_MIDDLE_FFB      4 //^
@@ -142,6 +166,9 @@
   #define PIN_MIDDLE_SPLAY    1
   #define PIN_INDEX_SPLAY     1
   #define PIN_THUMB_SPLAY     1
+  //set the GPIO pins to use for SDA and SCL for I2C
+  #define PIN_I2C_SDA         1
+  #define PIN_I2C_SCL         1
 #elif defined(ESP32)
   //(This configuration is for ESP32 DOIT V1 so make sure to change if you're on another board)
   #define PIN_PINKY           36
@@ -155,12 +182,15 @@
   #define PIN_A_BTN           27
   #define PIN_B_BTN           14
   #define PIN_MENU_BTN        27
-  #define PIN_TRIG_BTN        12 //unused if gesture set
+  #define PIN_TRIG_BTN        12 //unused if gesture set, if used ensure it's set different then PIN_CALIB 
   #define PIN_GRAB_BTN        13 //unused if gesture set
   #define PIN_PNCH_BTN        23 //unused if gesture set
   #define PIN_CALIB           12 //button for recalibration
   #define PIN_LED             2
-  #define PIN_PINKY_FFB       5  //used for force feedback
+    //If you have the servos connected directly to the microcontroller, set with the PIN_ config below.
+    //If you connected the FFB servos through the PCA9685 Servo driver board, leave the PIN_*Finger*_FFB
+    //  at 1 and instead set the servo board CH under the SERVO_CH_ config above instead
+  #define PIN_PINKY_FFB       5  //used for force feedback when connected direct to esp32
   #define PIN_RING_FFB        18 //^
   #define PIN_MIDDLE_FFB      19 //^
   #define PIN_INDEX_FFB       21 //^
@@ -171,6 +201,10 @@
   #define PIN_MIDDLE_SPLAY    1
   #define PIN_INDEX_SPLAY     1
   #define PIN_THUMB_SPLAY     1
+  //set the GPIO pins to use for SDA and SCL for I2C
+  #define PIN_I2C_SDA         16
+  #define PIN_I2C_SCL         22
+
 #endif
 
 // You must install RunningMedian library to use this feature
