@@ -20,7 +20,7 @@ class Finger : public EncodedInput, public Calibrated {
     int new_value = analogRead(pin);
 
     // Apply configured modifiers.
-    #if INVERT_FLEXION
+    #if INVERT_CURL
       new_value = ANALOG_MAX - new_value;
     #endif
 
