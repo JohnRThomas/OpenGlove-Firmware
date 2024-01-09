@@ -23,10 +23,11 @@
 #endif
 
 // Which communication protocol to use
-#define COMM_USB        0
-#define COMM_BLUETOOTH  1
-#define COMM_WIFI       2
-#define COMMUNICATION   COMM_USB
+#define COMM_USB          0
+#define COMM_BLUETOOTH    1
+#define COMM_WIFI         2
+#define COMM_BLUETOOTH_LE 3
+#define COMMUNICATION   COMM_BLUETOOTH_LE
 
 // COMM settings
 #define ENABLE_SYNCHRONOUS_COMM true // Experimental: If enabled, doesn't wait for FFB data before sending new input data.
@@ -35,6 +36,10 @@
 #define WIFI_SERIAL_SSID        "WIFI SSID here"
 #define WIFI_SERIAL_PASSWORD    "password here"
 #define WIFI_SERIAL_PORT        80
+// https://www.bluetooth.com/specifications/assigned-numbers/
+#define BLE_UUID                "8f8f832d-7705-4ba0-98c0-55b32e86f1e4"
+#define BLE_RX_UUID             "f183924e-27a1-4633-8a20-29119a747867"
+#define BLE_TX_UUID             "c88d81f1-b8f8-4f31-9585-b0be67e7273f"
 #define COMM_DELAY              4 // How much time between data sends (ms)
 
 // Button Settings

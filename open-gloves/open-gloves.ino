@@ -11,6 +11,9 @@
 #elif COMMUNICATION == COMM_WIFI
   #include "SerialWIFICommunication.hpp"
   ICommunication* comm = new WIFISerialCommunication();
+#elif COMMUNICATION == COMM_BLUETOOTH_LE
+  #include "SerialBLECommunication.hpp"
+  ICommunication* comm = new BLESerialCommunication();
 #endif
 
 #define ALWAYS_CALIBRATING CALIBRATION_LOOPS == -1
