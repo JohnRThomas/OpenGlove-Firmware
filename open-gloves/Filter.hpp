@@ -26,29 +26,29 @@ class Calibrated {
 };
 
 template<typename T>
-struct Calibrator {
+struct Filter {
   virtual void reset() = 0;
-  virtual void update(T input) = 0;
-  virtual T calibrate(T input) const = 0;
+  virtual void update(T /*input*/) = 0;
+  virtual T filter(T input) const = 0;
 };
 
 template<typename T, T output_min, T output_max>
-class MinMaxCalibrator : public Calibrator<T> {
+class MinMaxFilter : public Filter<T> {
  public:
-  MinMaxCalibrator() : value_min(output_max), value_max(output_min) {}
+  MinMaxFilter() : value_min(output_max), value_max(output_min) {}
 
-  void reset() {
+  void reset() override {
     value_min = output_max;
     value_max = output_min;
   }
 
-  void update(T input) {
+  void update(T input) override {
     // Update the min and the max.
     if (input < value_min) value_min = input;
     if (input > value_max) value_max = input;
   }
 
-  T calibrate(T input) const {
+  T filter(T input) const override {
     // This means we haven't had any calibration data yet.
     // Return a neutral value right in the middle of the output range.
     if (value_min > value_max) return (output_min + output_max) / 2.0f;
@@ -66,22 +66,22 @@ class MinMaxCalibrator : public Calibrator<T> {
 };
 
 template<typename T, T sensor_max, T driver_max_deviation, T output_min, T output_max>
-class CenterPointDeviationCalibrator : public Calibrator<T> {
+class CenterPointDeviationFilter : public Filter<T> {
  public:
-  CenterPointDeviationCalibrator() : range_min(sensor_max), range_max(0) {}
+  CenterPointDeviationFilter() : range_min(sensor_max), range_max(0) {}
 
-  void reset() {
+  void reset() override {
     range_min = sensor_max;
     range_max = 0;
   }
 
-  void update(T input) {
+  void update(T input) override {
     // Update the min and the max.
     if (input < range_min) range_min = accurateMap(input, output_min, output_max, 0, sensor_max);
     if (input > range_max) range_max = accurateMap(input, output_min, output_max, 0, sensor_max);
   }
 
-  T calibrate(T input) const {
+  T filter(T input) const {
     // Find the center point of the sensor so we know how much we have deviated from it.
     T center = (range_min + range_max) / 2.0f;
 
@@ -101,12 +101,12 @@ class CenterPointDeviationCalibrator : public Calibrator<T> {
 };
 
 template<typename T, T sensor_max, T driver_max_deviation, T output_min, T output_max>
-class FixedCenterPointDeviationCalibrator : public Calibrator<T> {
+class FixedCenterPointDeviationFilter : public Filter<T> {
  public:
-  void reset() {}
-  void update(T input) {}
+   void reset() override {}
+   void update(T /*input*/) override {}
 
-  T calibrate(T input) const {
+  T filter(T input) const override {
     // Find the center point of the sensor so we know how much we have deviated from it.
     T center = sensor_max / 2.0f;
 
@@ -118,5 +118,26 @@ class FixedCenterPointDeviationCalibrator : public Calibrator<T> {
 
     // Finally map the deviation from the center back to the output range.
     return map(output, -driver_max_deviation, driver_max_deviation, output_min, output_max);
+  }
+};
+
+template<typename T, T exponent, T output_min, T output_max>
+class ExponentialToLinearFilter : public MinMaxFilter<T, output_min, output_max> {
+  void reset() override {}
+  void update(T /*input*/) override {}
+
+  T filter(T input) const {
+    // TODO: Correct for the exponential input based on the configured exponent
+    return this->MinMaxFilter<T, output_min, output_max>::filter(input);
+  }
+};
+
+template<typename T>
+struct DummyFilter : public Filter<T> {
+  void reset() override {}
+  void update(T /*input*/) override {}
+
+  inline T filter(T input) const override {
+    return input;
   }
 };

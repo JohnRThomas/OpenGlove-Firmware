@@ -4,6 +4,7 @@
 #include "DriverProtocol.hpp"
 
 #include "Button.hpp"
+#include "Filter.hpp"
 #include "Finger.hpp"
 #include "ForceFeedback.hpp"
 #include "Gesture.hpp"
@@ -11,6 +12,7 @@
 #include "JoyStick.hpp"
 #include "LED.hpp"
 #include "Pin.hpp"
+#include "Sensor.hpp"
 
 StatusLED led(PIN_LED);
 
@@ -47,18 +49,30 @@ Button* buttons[BUTTON_COUNT] = {
 
 };
 
-#define FINGER_PARAMS(F) \
-  EncodedInput::Type::F, INVERT_CURL, INVERT_SPLAY, new PIN_##F##_K0, new PIN_##F##_K1, \
-      new PIN_##F##_K2, new PIN_##F##_SPLAY
+#define FINGER_PARAMS(F)                                                               \
+  EncodedInput::Type::F, INVERT_CURL, INVERT_SPLAY,                                    \
+  new HallEffectCurlMultiSensor<0, ANALOG_MAX>(new PIN_##F##_K0, new PIN_##F##_SPLAY), \
+  new ResistiveSensor<MinMaxFilter<int, 0, ANALOG_MAX>>(new PIN_##F##_K1),             \
+  nullptr, /* No Knuckle 2 on the other fingers */                                     \
+  new HallEffectSplayMultiSensor<0, ANALOG_MAX>(new PIN_##F##_K0, new PIN_##F##_SPLAY)
+
+#define INDEX_FINGER_PARAMS                                                            \
+  EncodedInput::Type::INDEX, INVERT_CURL, INVERT_SPLAY,                                \
+  new HallEffectCurlMultiSensor<0, ANALOG_MAX>(new PIN_INDEX_K0, new PIN_INDEX_SPLAY), \
+  new ResistiveSensor<MinMaxFilter<int, 0, ANALOG_MAX>>(new PIN_INDEX_K1),             \
+  new ResistiveSensor<MinMaxFilter<int, 0, ANALOG_MAX>>(new PIN_INDEX_K2),             \
+  new HallEffectSplayMultiSensor<0, ANALOG_MAX>(new PIN_INDEX_K0, new PIN_INDEX_SPLAY)
+
 
 #if ENABLE_THUMB
-  ConfigurableFinger<ENABLE_SPLAY, THUMB_KNUCKLE_COUNT, EncodedInput::KnuckleThumbOffset>
+  ConfigurableFinger<ENABLE_SPLAY, 2, EncodedInput::KnuckleThumbOffset>
       finger_thumb(FINGER_PARAMS(THUMB));
 #endif
-ConfigurableFinger<ENABLE_SPLAY, KNUCKLE_COUNT> finger_index(FINGER_PARAMS(INDEX));
-ConfigurableFinger<ENABLE_SPLAY, KNUCKLE_COUNT> finger_middle(FINGER_PARAMS(MIDDLE));
-ConfigurableFinger<ENABLE_SPLAY, KNUCKLE_COUNT> finger_ring(FINGER_PARAMS(RING));
-ConfigurableFinger<ENABLE_SPLAY, KNUCKLE_COUNT> finger_pinky(FINGER_PARAMS(PINKY));
+
+ConfigurableFinger<ENABLE_SPLAY, 3> finger_index(INDEX_FINGER_PARAMS);
+ConfigurableFinger<ENABLE_SPLAY, 2> finger_middle(FINGER_PARAMS(MIDDLE));
+ConfigurableFinger<ENABLE_SPLAY, 2> finger_ring(FINGER_PARAMS(RING));
+ConfigurableFinger<ENABLE_SPLAY, 2> finger_pinky(FINGER_PARAMS(PINKY));
 
 Finger* fingers[FINGER_COUNT] = {
   #if ENABLE_THUMB

@@ -2,13 +2,13 @@
 
 #include "Config.h"
 
-struct MultiSourcePin {
+struct Pin {
   virtual inline int analogRead() const = 0;
   virtual inline int digitalRead() const = 0;
 };
 
 template<int PIN>
-struct DirectPin : public MultiSourcePin {
+struct DirectPin : public Pin {
   inline int analogRead() const override {
     return ::analogRead(PIN);
   }
@@ -58,7 +58,7 @@ enum Mask {
 };
 
 template<Mask PIN_MASK>
-class MultiplexedPin : public MultiSourcePin {
+class MultiplexedPin : public Pin {
  private:
   inline void selectPin() const {
     digitalWrite(MUX_SEL_0, PIN_MASK & 0b00001);

@@ -7,7 +7,7 @@
 
 class Button : public EncodedInput {
  public:
-  Button(EncodedInput::Type type, MultiSourcePin* pin, bool invert) :
+  Button(EncodedInput::Type type, Pin* pin, bool invert) :
     type(type), pin(pin), on_state(invert ? HIGH : LOW), value(false) {}
 
   void setupInput() override {
@@ -33,7 +33,7 @@ class Button : public EncodedInput {
 
  private:
   const EncodedInput::Type type;
-  const MultiSourcePin* pin;
+  const Pin* pin;
   const bool on_state;
   bool value;
 };

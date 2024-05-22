@@ -7,7 +7,7 @@
 
 class JoyStickAxis : public EncodedInput {
  public:
-  JoyStickAxis(EncodedInput::Type type, MultiSourcePin* pin, float dead_zone, bool invert) :
+  JoyStickAxis(EncodedInput::Type type, Pin* pin, float dead_zone, bool invert) :
     type(type), pin(pin), dead_zone(dead_zone), invert(invert), value(ANALOG_MAX/2) {}
 
   void readInput() override {
@@ -49,7 +49,7 @@ class JoyStickAxis : public EncodedInput {
   }
 
   EncodedInput::Type type;
-  MultiSourcePin* pin;
+  Pin* pin;
   float dead_zone;
   bool invert;
   int value;

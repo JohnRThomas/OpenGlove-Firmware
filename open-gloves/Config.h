@@ -67,12 +67,10 @@
 #define KNUCKLE_DEPENDENCY_START 0.10f // Percentage (10%) of K1 motion before K2 starts moving
 #define KNUCKLE_DEPENDENCY_END   0.50f // Percentage (50%) of K1 motion where K2 finishes moving
 
-// Calibration Settings (See Calibration.hpp for more information)
+// Calibration Settings (See Filter.hpp for more information)
 #define CALIBRATION_LOOPS   -1 // How many loops should be calibrated. Set to -1 to always be calibrated.
-#define CALIBRATION_CURL    MinMaxCalibrator<int, 0, ANALOG_MAX>
 #define DRIVER_MAX_SPLAY    20  // The maximum deviation from the center point the driver supports.
 #define SENSOR_MAX_SPLAY    270 // The maximum total range of rotation of the sensor.
-#define CALIBRATION_SPLAY   FixedCenterPointDeviationCalibrator<int, SENSOR_MAX_SPLAY, DRIVER_MAX_SPLAY, 0, ANALOG_MAX>
 
 // Gesture enables, make false to use button override
 #define TRIGGER_GESTURE true
@@ -107,6 +105,7 @@
 #define ENABLE_MULTIPLEXER false
 
 // Counts of objects in the system used for looping
+// Don't touch this unless you are changing the way the code works.
 // Inputs
 #define GESTURE_COUNT        (TRIGGER_GESTURE + GRAB_GESTURE + PINCH_GESTURE)
 #define FINGER_COUNT         (ENABLE_THUMB ? 5 : 4)
@@ -120,98 +119,67 @@
 #define MAX_CALIBRATED_COUNT FINGER_COUNT
 #define MAX_OUTPUT_COUNT     (HAPTIC_COUNT + FORCE_FEEDBACK_COUNT)
 
-//PINS CONFIGURATION
-#if defined(__AVR__)
-  // Arduino Nano pinout.
-  #define PIN_PINKY           A0
-  #define PIN_RING            A1
-  #define PIN_MIDDLE          A2
-  #define PIN_INDEX           A3
-  #define PIN_THUMB           A4
-  #define PIN_JOY_X           A6
-  #define PIN_JOY_Y           A7
-  #define PIN_JOY_BTN         7
-  #define PIN_A_BTN           8
-  #define PIN_B_BTN           9
-  #define PIN_MENU_BTN        8
-  #define PIN_TRIG_BTN        10 //unused if gesture set
-  #define PIN_GRAB_BTN        11 //unused if gesture set
-  #define PIN_PNCH_BTN        12 //unused if gesture set
-  #define PIN_CALIB           13 //button for recalibration
-  #define PIN_LED             LED_BUILTIN
-  #define PIN_PINKY_FFB       2 //used for force feedback
-  #define PIN_RING_FFB        3 //^
-  #define PIN_MIDDLE_FFB      4 //^
-  #define PIN_INDEX_FFB       5 //^
-  #define PIN_THUMB_FFB       6 //^
-  #define PIN_HAPTIC          1
-  #define PIN_PINKY_SPLAY     1
-  #define PIN_RING_SPLAY      1
-  #define PIN_MIDDLE_SPLAY    1
-  #define PIN_INDEX_SPLAY     1
-  #define PIN_THUMB_SPLAY     1
-#elif defined(ESP32)
-  // ESP32 pinout. Try to avoid GPIO6 - GPIO11, they are used intenally for FLASH access and may break things if used.
-  // Analog Inputs
-  #define PIN_THUMB_K0     DirectPin<32>()  // First knuckle or whole finger if only one pot is attatched
-  #define PIN_THUMB_K1     MultiplexedPin<M0>()
-  #define PIN_THUMB_K2     MultiplexedPin<M1>()
-  #define PIN_THUMB_SPLAY  MultiplexedPin<M2>()
-
-  #define PIN_INDEX_K0     DirectPin<35>()  // First knuckle or whole finger if only one pot is attatched
-  #define PIN_INDEX_K1     MultiplexedPin<M3>()
-  #define PIN_INDEX_K2     MultiplexedPin<M4>()
-  #define PIN_INDEX_SPLAY  MultiplexedPin<M5>()
-
-  #define PIN_MIDDLE_K0    DirectPin<34>()  // First knuckle or whole finger if only one pot is attatched
-  #define PIN_MIDDLE_K1    MultiplexedPin<M6>()
-  #define PIN_MIDDLE_K2    MultiplexedPin<M7>()
-  #define PIN_MIDDLE_SPLAY MultiplexedPin<M8>()
-
-  #define PIN_RING_K0      DirectPin<39>()  // First knuckle or whole finger if only one pot is attatched
-  #define PIN_RING_K1      MultiplexedPin<M9>()
-  #define PIN_RING_K2      MultiplexedPin<M10>()
-  #define PIN_RING_SPLAY   MultiplexedPin<M11>()
-
-  #define PIN_PINKY_K0     DirectPin<36>()  // First knuckle or whole finger if only one pot is attatched
-  #define PIN_PINKY_K1     MultiplexedPin<M12>()
-  #define PIN_PINKY_K2     MultiplexedPin<M13>()
-  #define PIN_PINKY_SPLAY  MultiplexedPin<M14>()
-
-  #define PIN_JOY_X        DirectPin<33>()
-  #define PIN_JOY_Y        DirectPin<25>()
-
-  #define MUX_INPUT_A      33 // Must be a direct pin!
-  #define MUX_INPUT_B      25 // Must be a direct pin!
-
-  // Digital Inputs
-  #define PIN_JOY_BTN      DirectPin<23>()
-  #define PIN_A_BTN        DirectPin<22>()
-  #define PIN_B_BTN        DirectPin<1>()
-  #define PIN_MENU_BTN     DirectPin<3>()
-  #define PIN_CALIB        DirectPin<12>() //button for recalibration
-  #define PIN_TRIG_BTN     DirectPin<-1>() //unused if gesture is enabled
-  #define PIN_GRAB_BTN     DirectPin<-1>() //unused if gesture is enabled
-  #define PIN_PNCH_BTN     DirectPin<-1>() //unused if gesture is enabled
-
-  // Ouput pins
-  // These pins do not support multiplexing since pins are shared, any set output would only last
-  // until the multiplex changes it's connection.
-  #define MUX_SEL_0        26
-  #define MUX_SEL_1        27
-  #define MUX_SEL_2        14
-  #define MUX_SEL_3        12
-  #define PIN_LED          2
-  #define PIN_THUMB_FFB    21
-  #define PIN_INDEX_FFB    19
-  #define PIN_MIDDLE_FFB   18
-  #define PIN_RING_FFB     5
-  #define PIN_PINKY_FFB    17
-  #define PIN_HAPTIC       16
-#endif
-
 // You must install RunningMedian library to use this feature
 // https://www.arduino.cc/reference/en/libraries/runningmedian/
 // TODO: Allow calibration/filtering to be configurable here.
 #define ENABLE_MEDIAN_FILTER false //use the median of the previous values, helps reduce noise
 #define MEDIAN_SAMPLES 20
+
+// PINS CONFIGURATION
+// For ESP32, avoid GPIO6 - GPIO11, they are used intenally for FLASH access and may break things if used.
+// Analog Inputs
+#define PIN_THUMB_K0     DirectPin<32>()  // First knuckle or whole finger if only one pot is attatched
+#define PIN_THUMB_K1     MultiplexedPin<M0>()
+#define PIN_THUMB_K2     MultiplexedPin<M1>()
+#define PIN_THUMB_SPLAY  MultiplexedPin<M2>()
+
+#define PIN_INDEX_K0     DirectPin<35>()  // First knuckle or whole finger if only one pot is attatched
+#define PIN_INDEX_K1     MultiplexedPin<M3>()
+#define PIN_INDEX_K2     MultiplexedPin<M4>()
+#define PIN_INDEX_SPLAY  MultiplexedPin<M5>()
+
+#define PIN_MIDDLE_K0    DirectPin<34>()  // First knuckle or whole finger if only one pot is attatched
+#define PIN_MIDDLE_K1    MultiplexedPin<M6>()
+#define PIN_MIDDLE_K2    MultiplexedPin<M7>()
+#define PIN_MIDDLE_SPLAY MultiplexedPin<M8>()
+
+#define PIN_RING_K0      DirectPin<39>()  // First knuckle or whole finger if only one pot is attatched
+#define PIN_RING_K1      MultiplexedPin<M9>()
+#define PIN_RING_K2      MultiplexedPin<M10>()
+#define PIN_RING_SPLAY   MultiplexedPin<M11>()
+
+#define PIN_PINKY_K0     DirectPin<36>()  // First knuckle or whole finger if only one pot is attatched
+#define PIN_PINKY_K1     MultiplexedPin<M12>()
+#define PIN_PINKY_K2     MultiplexedPin<M13>()
+#define PIN_PINKY_SPLAY  MultiplexedPin<M14>()
+
+#define PIN_JOY_X        DirectPin<33>()
+#define PIN_JOY_Y        DirectPin<25>()
+
+#define MUX_INPUT_A      33 // Must be a direct pin!
+#define MUX_INPUT_B      25 // Must be a direct pin!
+
+// Digital Inputs
+#define PIN_JOY_BTN      DirectPin<23>()
+#define PIN_A_BTN        DirectPin<22>()
+#define PIN_B_BTN        DirectPin<1>()
+#define PIN_MENU_BTN     DirectPin<3>()
+#define PIN_CALIB        DirectPin<12>() //button for recalibration
+#define PIN_TRIG_BTN     DirectPin<-1>() //unused if gesture is enabled
+#define PIN_GRAB_BTN     DirectPin<-1>() //unused if gesture is enabled
+#define PIN_PNCH_BTN     DirectPin<-1>() //unused if gesture is enabled
+
+// Ouput pins
+// These pins do not support multiplexing since pins are shared, any set output would only last
+// until the multiplex changes it's connection.
+#define MUX_SEL_0        26
+#define MUX_SEL_1        27
+#define MUX_SEL_2        14
+#define MUX_SEL_3        12
+#define PIN_LED          2
+#define PIN_THUMB_FFB    21
+#define PIN_INDEX_FFB    19
+#define PIN_MIDDLE_FFB   18
+#define PIN_RING_FFB     5
+#define PIN_PINKY_FFB    17
+#define PIN_HAPTIC       16
